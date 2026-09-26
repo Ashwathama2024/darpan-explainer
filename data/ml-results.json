@@ -1,0 +1,59 @@
+{
+  "note": "Every number here is copied directly from DARPAN's own recorded test results, not recomputed or estimated for this corpus. See content/03-ml-and-detection.md for the full explanation of each figure.",
+
+  "physicsBaseline": {
+    "measuredOver": "~4 hours of simulated healthy flight (14,404 samples) plus injected-fault test missions",
+    "falseAdvisoriesDuringHealthyFlight": 0,
+    "healthySamplesReportedNominalPct": 99.45,
+    "injectedFaultsDetectedBeforeFullSeverity": "5 of 5 tested",
+    "sensorDriftMisreadAsMechanicalFaultPct": 0.037,
+    "laneFailureMisreadAsMechanicalFaultPct": 0,
+    "realFaultMisreadAsInstrumentationPct": 0
+  },
+
+  "rulCoverage": {
+    "acceptanceBar": "true crossing time falls inside the P10-P90 band in >= 80% of runs",
+    "heldOutRuns": 11,
+    "coveragePct": 100,
+    "coverageFraction": "11 / 11",
+    "medianBandWidthRatio": "4.5x (P90 / P10)",
+    "acceptanceBandWidthCeiling": "< 25x",
+    "healthyEngineFalselyProjectedTowardLimitPct": 0,
+    "acceptanceCeilingForFalseProjection": "< 15%"
+  },
+
+  "detectorComparison": {
+    "heldOutOn": "every high-altitude mission profile — excluded entirely from training, so this is a held-out operating regime, not just held-out samples",
+    "totalMissions": 234,
+    "totalWindows": 75114,
+    "trainWindows": 49764,
+    "testWindows": 25350,
+    "totalHeldOutFaultRuns": 54,
+    "matchedFalseAlarmRatePct": 0.186,
+    "results": [
+      { "detector": "Physics baseline", "detected": 16, "detectedOf": 54, "severityAtDetection": 0.537 },
+      { "detector": "Isolation Forest (unsupervised)", "detected": 6, "detectedOf": 54, "severityAtDetection": 0.590 },
+      { "detector": "Gradient Boosting (shipped model)", "detected": 47, "detectedOf": 54, "severityAtDetection": 0.110 }
+    ]
+  },
+
+  "ablationStudy": {
+    "purpose": "Checks whether the ML model's advantage is real, or whether it's just re-reading features the physics detector already computes.",
+    "variants": [
+      { "variant": "Physics baseline (reference)", "features": 0, "detected": 16, "detectedOf": 54, "severityAtDetection": 0.537 },
+      { "variant": "GBM — raw residual statistics only", "features": 49, "detected": 45, "detectedOf": 54, "severityAtDetection": 0.110 },
+      { "variant": "GBM — physics-derived features only", "features": 10, "detected": 37, "detectedOf": 54, "severityAtDetection": 0.249 },
+      { "variant": "GBM — all features", "features": 59, "detected": 48, "detectedOf": 54, "severityAtDetection": 0.109 },
+      { "variant": "GBM — all features + component-coupling", "features": 61, "detected": 47, "detectedOf": 54, "severityAtDetection": 0.110 }
+    ],
+    "keyFinding": "The model trained on raw residual statistics ALONE (49 features, none derived from the physics detector's own reasoning) still catches 45 of 54 — close to the full-feature model. This shows the model is learning something real from the data, not repackaging the physics detector's own verdict.",
+    "honestNegativeFinding": "Adding hand-engineered component-coupling features very mildly HURTS detection count (48 -> 47) for essentially no change in severity (0.109 -> 0.110). Reported as 'no measurable help' rather than dropped from the writeup."
+  },
+
+  "trainableFaultCoverage": {
+    "trainable": 11,
+    "totalCatalogued": 24,
+    "reason": "Bottlenecked by the frozen sensor suite, not by missing labels — most untrainable faults need a channel (spectral vibration, knock, propeller-shaft rpm) the modeled instrument suite does not carry at all.",
+    "oneKnownPathToTwelfth": "One additional fault already has everything else needed (a real root-factor coupling) and is blocked only on an incident-class assignment plus a deliberate retrain decision — not taken automatically as a side effect of unrelated work."
+  }
+}

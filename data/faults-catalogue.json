@@ -1,0 +1,110 @@
+{
+  "note": "This is an accurate, representative SUBSET of DARPAN's full 24-fault catalogue, not a complete enumeration of all 24 by name — each entry below is backed by specific, real detail from the project's own source. Presenting only these, clearly labelled as a subset, was a deliberate choice: a fabricated 'complete' list of 24 rows would violate the exact honesty discipline this whole corpus is trying to represent. The headline figure IS complete and exact: 11 of 24 catalogued faults are trainable today.",
+
+  "summary": {
+    "totalCatalogued": 24,
+    "trainable": 11,
+    "trainableCeilingReason": "Bottlenecked by the frozen sensor suite (no spectral/multi-axis vibration, no knock sensor, no propeller-shaft rpm), not by missing labels or missing work."
+  },
+
+  "faults": [
+    {
+      "id": "F-COOLING-OVERTEMP-CHT",
+      "name": "Cooling system overtemperature",
+      "incidentClass": "cooling",
+      "trainable": true,
+      "mechanism": "Root factor: cooling effectiveness drops below 1.0 (healthy). Coolant/CHT temperature rises directly; oil temperature follows through the shared cooling circuit; EGT rises across all four cylinders evenly (common-mode signature, not a single-cylinder one)."
+    },
+    {
+      "id": "F-OIL-OVERTEMP",
+      "name": "Oil overtemperature",
+      "incidentClass": "lubrication",
+      "trainable": true,
+      "mechanism": "Root factor: extra oil heat the cooler cannot reject. Oil temperature rises; oil pressure falls as a secondary effect (hotter oil is thinner)."
+    },
+    {
+      "id": "F-OIL-P-LOW",
+      "name": "Low oil pressure",
+      "incidentClass": "lubrication",
+      "trainable": true,
+      "mechanism": "Root factor: fractional oil gallery pressure loss. The fastest-developing fault in the catalogue (characteristic time constant ~120 seconds) — used as the reference point for how short the degradation-rate detection window can safely be."
+    },
+    {
+      "id": "F-IGNITION-COIL-MISFIRE",
+      "name": "Ignition coil misfire",
+      "incidentClass": "misfire",
+      "trainable": true,
+      "mechanism": "Root factor: per-cylinder combustion loss. A misfiring cylinder's EGT collapses (stops burning) while healthy cylinders are unaffected — a single-cylinder, not common-mode, signature."
+    },
+    {
+      "id": "F-INJECTOR-PARTIAL",
+      "name": "Partial injector blockage",
+      "incidentClass": "injector",
+      "trainable": true,
+      "mechanism": "Root factor: per-cylinder fuelling shortfall. A partially clogged injector leans that cylinder's mixture — its EGT falls, but less steeply than a full misfire, which is the exact distinguishing signature between the two fault types on the same sensor channel."
+    },
+    {
+      "id": "F-GEN-FAIL",
+      "name": "Generator / charging system failure",
+      "incidentClass": "electrical (assignment pending)",
+      "trainable": false,
+      "reason": "The one fault on the boundary: it already has a real, working root-factor coupling (generator effectiveness) and is fully injectable in the simulator — it is blocked purely on a deliberate incident-class assignment and retrain decision that the project has explicitly chosen not to make as a side effect of unrelated work. This is the one named, understood path to a 12th trainable fault."
+    },
+    {
+      "id": "F-VIBRATION-MECH",
+      "name": "Mechanical vibration fault",
+      "incidentClass": "mechanical",
+      "trainable": false,
+      "reason": "Needs a multi-axis or frequency-banded vibration signature. The modeled instrument suite carries only a single scalar vibration RMS reading from one mount point — enough to say 'more vibration than usual,' not enough to say what KIND of vibration."
+    },
+    {
+      "id": "F-PGB-COLLAR-NUT-MISSING",
+      "name": "Propeller gearbox collar nut failure",
+      "incidentClass": "mechanical",
+      "trainable": false,
+      "reason": "Same limitation as F-VIBRATION-MECH — this failure mode's real signature is a specific vibration frequency pattern, which a single scalar RMS reading cannot represent."
+    },
+    {
+      "id": "F-OVERSPEED",
+      "name": "Engine/propeller overspeed",
+      "incidentClass": "control",
+      "trainable": false,
+      "reason": "A real overspeed condition is best characterized by propeller-shaft speed diverging from engine speed through the reduction gearbox — the modeled instrument suite has no propeller-shaft-speed sensor."
+    },
+    {
+      "id": "F-THROTTLE-LINKAGE-BREAK",
+      "name": "Throttle linkage failure",
+      "incidentClass": "control",
+      "trainable": false,
+      "reason": "A mechanical linkage failure the current sensor suite cannot directly observe with confidence."
+    },
+    {
+      "id": "F-GEN-STATOR-NOZZLE",
+      "name": "Generator stator / cooling nozzle fault",
+      "incidentClass": "electrical",
+      "trainable": false,
+      "reason": "The electrical incident class currently has no residual channel of its own at all to detect against — stated directly as a real, open gap, not glossed over."
+    },
+    {
+      "id": "F-EGT-SPLIT-COMBUSTION",
+      "name": "Combustion-driven EGT split",
+      "incidentClass": "combustion",
+      "trainable": false,
+      "reason": "A different KIND of gap from the others here — this fault is meant to mirror the severity of whichever injector or ignition fault is actually driving it, but that parent-following link isn't implemented yet. Not a sensor-suite ceiling; an acknowledged implementation gap."
+    },
+    {
+      "id": "F-TURBO-OIL-COKING",
+      "name": "Turbo oil coking",
+      "incidentClass": "lubrication",
+      "trainable": false,
+      "reason": "A genuinely open question rather than a settled 'no': in a real, measured test run, this fault produced zero detected degradation episodes over the demo mission's ~45-minute length. Whether that's because the mission is simply too short for this fault's real development time, or a deeper visibility gap, is stated in the project's own notes as unresolved — flagged for follow-up, not silently assumed either way."
+    },
+    {
+      "id": "F-AVGAS-LEAD-SLUDGE",
+      "name": "Leaded-fuel sludge fouling",
+      "incidentClass": "lubrication",
+      "trainable": false,
+      "reason": "The slowest fault in the whole catalogue (characteristic time constant on the order of 10 hours). Same open question as F-TURBO-OIL-COKING: it produced zero episodes on the ~45-minute demo mission, most plausibly simply because the mission is far shorter than this fault's real development time."
+    }
+  ]
+}

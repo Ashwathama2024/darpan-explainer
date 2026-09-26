@@ -1,0 +1,115 @@
+{
+  "title": "DARPAN aero-pdm",
+  "tagline": "AI-enabled digital twin for aero piston engine health monitoring, fault prediction and mission-reliability (SIH26054)",
+  "repoTree": {
+    "name": "darpan (package: aero-pdm)",
+    "type": "root",
+    "description": "A pnpm monorepo. One-way package dependency graph, zero hardcoded engine numbers — every constant traces to a data file.",
+    "children": [
+      {
+        "name": "shared/",
+        "type": "package",
+        "description": "Types, constants, and the physics plant model itself.",
+        "children": [
+          { "name": "src/plant/isa.ts", "type": "file", "description": "International Standard Atmosphere: sea-level constants, lapse rate, altitude→temperature/pressure/density." },
+          { "name": "src/plant/rotax916-plant.ts", "type": "file", "description": "The forward model: given (rpm, throttle, altitude, OAT [, faults]), predicts every sensor channel for a healthy or faulted engine. Used by both the simulator (to generate ground truth) and the detector (to generate expected values)." },
+          { "name": "src/plant/envelope.ts", "type": "file", "description": "Time-limited and condition-limited operating envelope checks (e.g. 5-minute takeoff power cap)." },
+          { "name": "src/plant/lag.ts", "type": "file", "description": "First-order lag model — thermal and pressure channels move toward their target over time, not instantly." },
+          { "name": "src/plant/climb.ts", "type": "file", "description": "Estimates climb/descent rate from excess power, so altitude becomes a live output of flying rather than a dial an operator sets." },
+          { "name": "src/plant/engine-baseline.ts", "type": "file", "description": "The single place deciding which published number comes from which engine variant (performance baseline vs transferred instrument-suite data)." }
+        ]
+      },
+      {
+        "name": "packages/simulator/",
+        "type": "package",
+        "description": "Mission generation, fault injection, the SOP procedure state machine, sensor realism (noise, quantisation, instrument drift).",
+        "children": []
+      },
+      {
+        "name": "packages/features/",
+        "type": "package",
+        "description": "Turns raw snapshots into residuals, persistence-confirmed deviations (N-of-M confirmation), and the sensor-vs-engine instrumentation split.",
+        "children": []
+      },
+      {
+        "name": "packages/decision/",
+        "type": "package",
+        "description": "The physics-only fault detector, RUL/degradation-rate estimation (Theil-Sen), and the digital-thread evidence-chain logger.",
+        "children": []
+      },
+      {
+        "name": "packages/knowledge/",
+        "type": "package",
+        "description": "Baseline curves and the sensor registry.",
+        "children": []
+      },
+      {
+        "name": "packages/ingestion/",
+        "type": "package",
+        "description": "Pull-based replay bus — a stand-in for a real telemetry link.",
+        "children": []
+      },
+      {
+        "name": "packages/engine-host/",
+        "type": "package",
+        "description": "A standalone process running ONE live engine instance, streamed over Server-Sent Events so every viewer watches the same engine. Nothing imports it as a library — the UI reaches it over HTTP.",
+        "children": []
+      },
+      {
+        "name": "packages/ui/",
+        "type": "package",
+        "description": "The React/Vite dashboard: gauges, the 3D digital twin, analysis pages, the degradation log, mission reports.",
+        "children": []
+      },
+      {
+        "name": "data/corpus/",
+        "type": "data",
+        "description": "Vendored OEM/research source files, checksummed so they can never be silently hand-edited.",
+        "children": []
+      },
+      {
+        "name": "data/authored/",
+        "type": "data",
+        "description": "DARPAN's own calibrated values — every leaf carries a provenance tag explaining where the number came from.",
+        "children": []
+      },
+      {
+        "name": "tools/",
+        "type": "tooling",
+        "description": "gen-corpus.ts is the only code allowed to read data/ directly and turn it into typed constants. export-dataset.ts builds the ML training set from simulated missions.",
+        "children": []
+      },
+      {
+        "name": "ml/",
+        "type": "tooling",
+        "description": "train.py trains the gradient-boosting model; ablate.py runs the feature-ablation study that checks the model isn't just re-reading the physics detector's own output.",
+        "children": []
+      }
+    ]
+  },
+  "dataFlow": [
+    { "step": 1, "name": "SimulatorEngine / replay bus", "description": "Produces one tick's raw sensor snapshot — either a live simulated mission or a replayed recording." },
+    { "step": 2, "name": "EngineSnapshot", "description": "Every sensor channel's raw value for this tick." },
+    { "step": 3, "name": "FeatureEngine → FeatureSnapshot", "description": "Computes residuals (observed − physics-predicted), plus both a lagged and an instantaneous baseline." },
+    { "step": 4, "name": "DecisionEngine → DecisionOutput", "description": "System risk score, active alerts, and each alert's own evidence chain." },
+    { "step": 5, "name": "UI + downstream consumers", "description": "The live dashboard; the forecast/RUL module (mission-ready duration, P10/P50/P90 projection); a labelled training-data recorder feeding the ML pipeline." }
+  ],
+  "pages": [
+    { "route": "/", "name": "Home", "role": "Dashboard: condition band, gauges, AI degradation score, SOP phase rail, trend sparklines." },
+    { "route": "/simulator", "name": "Simulator", "role": "FADEC-style lab console — fly a mission by hand, inject a catalogue fault, step through SOP phases." },
+    { "route": "/engine3d", "name": "3D Engine", "role": "The holographic 3D digital twin — live health-tinted parts, fly-in camera on selection." },
+    { "route": "/analysis", "name": "Analysis", "role": "Residual plots, per-cylinder view, fuel-efficiency panel, advisory history." },
+    { "route": "/degradation", "name": "Degradation", "role": "Per-component episode log with separate operator vs. machine disposition." },
+    { "route": "/mission-report", "name": "Mission Report", "role": "A single mission's health report — exportable and archivable." },
+    { "route": "/baselines", "name": "Baselines", "role": "The engine's own reference numbers per SOP phase, with narrow editable anchor points." },
+    { "route": "/ml", "name": "ML Transparency", "role": "The real, recorded model comparison numbers, ablation study, and declared limits." },
+    { "route": "/training", "name": "Training", "role": "A library of recorded/exported flight CSVs, with fault labeling." },
+    { "route": "/help", "name": "Help", "role": "Generated operator's manual, rendered from the same source constants as the rest of the app." },
+    { "route": "/about", "name": "About", "role": "Generated system dossier — provenance and honest-limits summary." }
+  ],
+  "intakes": [
+    { "id": "sim", "name": "Sim", "commandable": true, "description": "A live, in-browser simulated engine the operator directly commands. This is where a mission is authored." },
+    { "id": "logger", "name": "Logger", "commandable": false, "description": "Pure playback of a previously recorded file — a real recording, or a Sim export. Never commandable." },
+    { "id": "live", "name": "Live", "commandable": false, "description": "Watches a real engine process running as its own service, over a real network link. Deliberately read-only always, even though nothing physical is attached yet — a monitoring dashboard that could start or stop a real engine over a link is not made safe just because nothing real happens to be plugged in." }
+  ]
+}
